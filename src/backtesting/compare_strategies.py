@@ -4,6 +4,9 @@ from src.utils.data_loader import load_stock_data
 from src.strategies.momentum_strategy import MomentumStrategy
 from src.strategies.buy_hold import BuyHoldStrategy
 
+FEE_RATE = 0.001
+SLIPPAGE = 0.0005
+
 
 def run_backtest(strategy, prices, initial_cash=10000):
     cash = initial_cash
@@ -19,14 +22,23 @@ def run_backtest(strategy, prices, initial_cash=10000):
         price = float(prices[i])
         signal = strategy.get_signal(prices, i)
 
-        if signal == "BUY" and cash > 0:
-            shares = cash / price
-            cash = 0
+        if signal == "BUY" and shares == 0:
+            allocation = cash * strategy.get_position_size()
+            execution_price = price * (1 + SLIPPAGE)
+
+            shares = allocation / execution_price
+            cash -= allocation
+
             trades += 1
 
         elif signal == "SELL" and shares > 0:
-            cash = shares * price
+            execution_price = price * (1 - SLIPPAGE)
+
+            cash += shares * execution_price
+            cash -= cash * FEE_RATE
+
             shares = 0
+
             trades += 1
 
         total = cash + shares * price

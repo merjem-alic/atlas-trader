@@ -3,6 +3,7 @@ from src.strategies.base import BaseStrategy
 class MomentumStrategy(BaseStrategy):
 
     def get_signal(self, prices, i):
+
         if i < 2:
             return "HOLD"
 
@@ -17,3 +18,6 @@ class MomentumStrategy(BaseStrategy):
             return "SELL"
 
         return "HOLD"
+
+    def get_position_size(self):
+        return 0.3
